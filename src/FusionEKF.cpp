@@ -94,7 +94,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
                0,    0,    0, 1000;
         
         ekf_.Q_ = Eigen::MatrixXd(4,4);
-        ekf_.P_ <<
+        ekf_.Q_ <<
         0.1,    0,    0,    0,
         0,    0.1,    0,    0,
         0,      0,  0.1,    0,
@@ -107,6 +107,8 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
         previous_timestamp_ = measurement_pack.timestamp_;
         return;
     }
+    
+    //if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) return;
     
     /*****************************************************************************
      *  Prediction
@@ -156,19 +158,46 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     
     if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
         // Radar updates
-        double px = measurement_pack.raw_measurements_(0) * cos(measurement_pack.raw_measurements_(1));
-        double py = measurement_pack.raw_measurements_(0) * sin(measurement_pack.raw_measurements_(1));
         
-        Eigen::VectorXd z = Eigen::VectorXd(2);
-        z << measurement_pack.raw_measurements_(0), measurement_pack.raw_measurements_(1);
+        cout << "RADAR" << endl;
 
-        ekf_.H_ = Eigen::MatrixXd(2,4);
-        ekf_.H_ <<
-        cos(measurement_pack.raw_measurements_(1)),-py,0,0,
-        px,sin(measurement_pack.raw_measurements_(1)),0,0;
-
-        return;
         
+        Eigen::VectorXd z = Eigen::VectorXd(1);
+        z << measurement_pack.raw_measurements_(0);
+
+        double r = sqrt(ekf_.x_(0)*ekf_.x_(0) + ekf_.x_(1)*ekf_.x_(1));
+        Eigen::VectorXd rr = Eigen::VectorXd(1);
+        rr(0) = r;
+
+        ekf_.H_ = Eigen::MatrixXd(1,4);
+        ekf_.H_ << ekf_.x_(0) / r, ekf_.x_(1) / r, 0,0;
+
+        Eigen::VectorXd y = Eigen::VectorXd(4);
+        y = z - rr;
+        
+        Eigen::MatrixXd S = ekf_.H_ * ekf_.P_ * ekf_.H_.transpose();
+        S(0,0) += R_radar_(0,0);
+        cout << "S (03) = " << S << endl;
+        
+        Eigen::MatrixXd K = ekf_.P_ * ekf_.H_.transpose() * S.inverse();
+        cout << "K (03) = " << K << endl;
+        
+        ekf_.x_ = ekf_.x_ + K * y;
+        
+        cout << "x_ (03) = " << ekf_.x_ << endl;
+        cout << "P_ (03) = " << ekf_.P_ << endl;
+        
+        Eigen::MatrixXd I = Eigen::MatrixXd(4,4);
+        I <<
+        1,0,0,0,
+        0,1,0,0,
+        0,0,1,0,
+        0,0,0,1;
+        ekf_.P_ = (I - K * ekf_.H_) * ekf_.P_;
+        
+        cout << "x_ (04) = " << ekf_.x_ << endl;
+        cout << "P_ (04) = " << ekf_.P_ << endl;
+
     } else {
         // Laser updates
         Eigen::VectorXd z = Eigen::VectorXd(2);
@@ -181,19 +210,19 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
         Eigen::VectorXd y = Eigen::VectorXd(4);
         y = z - ekf_.H_ * ekf_.x_;
         
-        cout << "y (03) = " << y << endl;
+//        cout << "y (03) = " << y << endl;
 
 
         Eigen::MatrixXd S = ekf_.H_ * ekf_.P_ * ekf_.H_.transpose();
-        cout << "S (03) = " << S << endl;
+//        cout << "S (03) = " << S << endl;
 
         Eigen::MatrixXd K = ekf_.P_ * ekf_.H_.transpose() * S.inverse();
-        cout << "K (03) = " << K << endl;
+//        cout << "K (03) = " << K << endl;
 
         ekf_.x_ = ekf_.x_ + K * y;
         
-        cout << "x_ (03) = " << ekf_.x_ << endl;
-        cout << "P_ (03) = " << ekf_.P_ << endl;
+//        cout << "x_ (03) = " << ekf_.x_ << endl;
+//        cout << "P_ (03) = " << ekf_.P_ << endl;
 
         Eigen::MatrixXd I = Eigen::MatrixXd(4,4);
         I <<
@@ -203,8 +232,8 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
             0,0,0,1;
         ekf_.P_ = (I - K * ekf_.H_) * ekf_.P_;
         
-        cout << "x_ (04) = " << ekf_.x_ << endl;
-        cout << "P_ (04) = " << ekf_.P_ << endl;
+//        cout << "x_ (04) = " << ekf_.x_ << endl;
+//        cout << "P_ (04) = " << ekf_.P_ << endl;
 
     }
     
