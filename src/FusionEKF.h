@@ -42,8 +42,13 @@ private:
   Tools tools;
   Eigen::MatrixXd R_laser_;
   Eigen::MatrixXd R_radar_;
-  Eigen::MatrixXd H_laser_;
-  Eigen::MatrixXd Hj_;
+
+
+  Eigen::MatrixXd F_;
+  Eigen::MatrixXd Q_;
+
+  double arctan_with_xy(const double x, const double y);
+
 };
 
 #endif /* FusionEKF_H_ */

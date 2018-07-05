@@ -12,16 +12,16 @@ public:
   Eigen::MatrixXd P_;
 
   // state transition matrix
-  Eigen::MatrixXd F_;
+//  Eigen::MatrixXd F_;
 
   // process covariance matrix
-  Eigen::MatrixXd Q_;
+//  Eigen::MatrixXd Q_;
 
   // measurement matrix
-  Eigen::MatrixXd H_;
+//  Eigen::MatrixXd H_;
 
   // measurement covariance matrix
-  Eigen::MatrixXd R_;
+//  Eigen::MatrixXd R_;
 
   /**
    * Constructor
