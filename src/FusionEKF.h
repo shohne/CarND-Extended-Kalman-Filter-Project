@@ -46,7 +46,6 @@ private:
     
     Eigen::MatrixXd F_;
     Eigen::MatrixXd Q_;
-    
 };
 
 #endif /* FusionEKF_H_ */

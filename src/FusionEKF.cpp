@@ -34,8 +34,7 @@ FusionEKF::FusionEKF() {
     
     ekf_.x_ = VectorXd(4);
     ekf_.x_ << 0,0,0,0;
-    
-}
+    }
 
 FusionEKF::~FusionEKF() {}
 
@@ -55,16 +54,15 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
         }
         ekf_.P_ = Eigen::MatrixXd(4,4);
         ekf_.P_ <<
-        0.1,    0,    0,    0,
-        0,    0.1,    0,    0,
-        0,    0,  100,    0,
-        0,    0,    0,  100;
-        
+               1,    0,    0,    0,
+               0,    1,    0,    0,
+               0,    0,  100,    0,
+               0,    0,    0,  100;
+
         is_initialized_ = true;
         previous_timestamp_ = measurement_pack.timestamp_;
         return;
     }
-    
     
     /**
      TODO:
@@ -90,11 +88,12 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     
     Q_ = Eigen::MatrixXd(4,4);
     Q_ <<
-    deltaT4 * noise_ax / 4.0,                          0,  deltaT3 * noise_ax / 2.0,                             0,
-    0,   deltaT4 * noise_ay / 4.0,                         0,      deltaT3 * noise_ay / 2.0,
-    deltaT3 * noise_ax / 2.0,                          0,  deltaT2 * noise_ax / 2.0,                             0,
-    0,   deltaT3 * noise_ay / 2.0,                         0,      deltaT2 * noise_ay / 2.0;
+           		deltaT4 * noise_ax / 4.0,                          0,  deltaT3 * noise_ax / 2.0,                             0,
+                                       0,   deltaT4 * noise_ay / 4.0,                         0,      deltaT3 * noise_ay / 2.0,
+                deltaT3 * noise_ax / 2.0,                          0,  deltaT2 * noise_ax / 2.0,                             0,
+                                       0,   deltaT3 * noise_ay / 2.0,                         0,      deltaT2 * noise_ay / 2.0;
 
+    
     ekf_.P_ = F_ * ekf_.P_ * F_.transpose() + Q_;
     ekf_.x_ = F_ * ekf_.x_;
 
@@ -134,10 +133,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
         Eigen::MatrixXd K = ekf_.P_ * H.transpose() * S.inverse();
         ekf_.x_ = ekf_.x_ + K * y;
         ekf_.P_ = (MatrixXd::Identity(4, 4) - K * H) * ekf_.P_;
-
     } else {
-        //        cout << "LIDAR" << endl;
-        
         Eigen::VectorXd z = Eigen::VectorXd(2);
         z << measurement_pack.raw_measurements_(0), measurement_pack.raw_measurements_(1);
         
@@ -145,6 +141,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
         H <<
         1,0,0,0,
         0,1,0,0;
+
         Eigen::VectorXd y = Eigen::VectorXd(2);
         y = z - H * ekf_.x_;
         
@@ -153,7 +150,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
         ekf_.x_ = ekf_.x_ + K * y;
         ekf_.P_ = (MatrixXd::Identity(4, 4) - K * H) * ekf_.P_;
     }
-    
     previous_timestamp_ = measurement_pack.timestamp_;
 }
+
 
