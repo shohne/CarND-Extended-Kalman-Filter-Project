@@ -55,3 +55,9 @@ MatrixXd Tools::CalculateJacobian(const VectorXd& x_state) {
     jacobian(2,3) = py / p;
     return jacobian;
 }
+
+double Tools::AdjustAngle(double angle) {
+    while (angle < -PI)  angle += 2*PI;
+    while (angle >  PI)  angle -= 2*PI;
+    return angle;
+}

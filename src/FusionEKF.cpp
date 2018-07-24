@@ -12,7 +12,6 @@ using Eigen::MatrixXd;
 using Eigen::VectorXd;
 using std::vector;
 
-#define PI 3.14159265
 
 /*
  * Constructor.
@@ -34,6 +33,15 @@ FusionEKF::FusionEKF() {
     
     ekf_.x_ = VectorXd(4);
     ekf_.x_ << 0,0,0,0;
+    
+    Eigen::MatrixXd H_lidar = Eigen::MatrixXd(2,4);
+    H_lidar <<
+    1,0,0,0,
+    0,1,0,0;
+    
+    noise_ax = 9.0;
+    noise_ay = 9.0;
+
     }
 
 FusionEKF::~FusionEKF() {}
@@ -76,8 +84,6 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     double deltaT2 = deltaT  * deltaT;
     double deltaT3 = deltaT2 * deltaT;
     double deltaT4 = deltaT3 * deltaT;
-    double noise_ax = 9;
-    double noise_ay = 9;
     
     F_ = Eigen::MatrixXd(4,4);
     F_ <<
@@ -108,13 +114,9 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
      */
     
     if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
-        //        cout << "RADAR" << endl;
-        
         Eigen::VectorXd z = Eigen::VectorXd(3);
         z << measurement_pack.raw_measurements_(0), measurement_pack.raw_measurements_(1), measurement_pack.raw_measurements_(2);
-
-        while (z(1) < -PI) z(1) += 2*PI;
-        while (z(1) >  PI) z(1) -= 2*PI;
+        z(1) = tools.AdjustAngle(z(1));
 
         Eigen::MatrixXd H = tools.CalculateJacobian(ekf_.x_);
         
@@ -124,8 +126,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
         double theta = atan2(ekf_.x_(1), ekf_.x_(0));
 
         y(1) = z(1) - theta;
-        while (y(1) < -PI) y(1) += 2*PI;
-        while (y(1) >  PI) y(1) -= 2*PI;
+        y(1) = tools.AdjustAngle(y(1));
 
         y(2) = z(2) - (ekf_.x_(0)*ekf_.x_(2) + ekf_.x_(1)*ekf_.x_(3)) / sqrt(ekf_.x_(0)*ekf_.x_(0) + ekf_.x_(1)*ekf_.x_(1));
 
@@ -137,20 +138,16 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
         Eigen::VectorXd z = Eigen::VectorXd(2);
         z << measurement_pack.raw_measurements_(0), measurement_pack.raw_measurements_(1);
         
-        Eigen::MatrixXd H = Eigen::MatrixXd(2,4);
-        H <<
-        1,0,0,0,
-        0,1,0,0;
-
         Eigen::VectorXd y = Eigen::VectorXd(2);
-        y = z - H * ekf_.x_;
+        y = z - H_lidar * ekf_.x_;
         
-        Eigen::MatrixXd S = H * ekf_.P_ * H.transpose() + R_laser_;
-        Eigen::MatrixXd K = ekf_.P_ * H.transpose() * S.inverse();
+        Eigen::MatrixXd S = H_lidar * ekf_.P_ * H_lidar.transpose() + R_laser_;
+        Eigen::MatrixXd K = ekf_.P_ * H_lidar.transpose() * S.inverse();
         ekf_.x_ = ekf_.x_ + K * y;
-        ekf_.P_ = (MatrixXd::Identity(4, 4) - K * H) * ekf_.P_;
+        ekf_.P_ = (MatrixXd::Identity(4, 4) - K * H_lidar) * ekf_.P_;
     }
     previous_timestamp_ = measurement_pack.timestamp_;
 }
+
 
 
