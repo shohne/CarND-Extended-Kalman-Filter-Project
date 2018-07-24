@@ -21,6 +21,7 @@ VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
     }
     rmse = rmse / (double)estimations.size();
     rmse = rmse.array().sqrt();
+
     return rmse;
 }
 
