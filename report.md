@@ -11,7 +11,7 @@ There are 3 main steps in this code:
 2. Prediction;
 3. Update state;
 
-All these 3 steps are in file **src/FusionEKF.cpp**, *Initialization* is on class *FusionEKF* constructor and begin of FusionEKF::ProcessMeasurement method. The *Prediction** and *Update* are in **FusionEKF::ProcessMeasurement**.
+All these 3 steps are in the file **src/FusionEKF.cpp**, the *initialization* is on class *FusionEKF* constructor and beginning of FusionEKF::ProcessMeasurement method. The *Prediction** and *Update* are in **FusionEKF::ProcessMeasurement**.
 
 There is a auxiliary class *Tools* that computes:
 1. RMSE [root mean square error](https://en.wikipedia.org/wiki/Root-mean-square_deviation), method **Tools::CalculateRMSE**;

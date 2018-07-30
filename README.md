@@ -25,11 +25,11 @@ Create the executable file:
 ```
 make
 ```
-If everything was OK, there should be a executable file **ExtendedKF** on current directory.
+If everything was accordingly, there should be an executable file **ExtendedKF** on current directory.
 
 Running the Application
 ---
-Firts, start the executable:
+First, start the executable:
 ```
 ./ExtendedKF
 ```
