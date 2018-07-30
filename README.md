@@ -5,7 +5,7 @@ This repo contains the written code to complete the project **Extended Kalman Fi
 
 Prerequisites
 ---
-To run this project, it is necessary to have a **c++11** compiler and **cmake 3.5 (minimum)**.
+To run this project, it is necessary to have a **c++11** compiler and **cmake** (3.5 minimum version).
 
 Installation
 ---
@@ -45,12 +45,12 @@ Finally, run the simulator. An example for execution:
 
 We could obtain a **root mean square error** as:
 
-Data|RMSE
----------
-x|0.1082
-y|0.0982
-vx|0.4760
-vy|0.5201
+|Data|RMSE |
+|----|-----|
+|x   |0.108|
+|y   |0.098|
+|vx  |0.476|
+|vy  |0.520|
 
 Implementation Details
 ---
