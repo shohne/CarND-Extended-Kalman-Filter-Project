@@ -16,5 +16,5 @@ All these 3 steps are in file **src/FusionEKF.cpp**, *Initialization* is on clas
 There is a auxiliary class *Tools* that computes:
 1. RMSE [root mean square error](https://en.wikipedia.org/wiki/Root-mean-square_deviation), method **Tools::CalculateRMSE**;
 2. Jacobian Matrix for Radar, method **Tools::CalculateJacobian**;
-3. Tools::AdjustAngle that, from a given angle, returns the correspondent between -&#960; PI and PI.
+3. Tools::AdjustAngle that, from a given angle, returns the correspondent between -&#960; and &#960;.
 
