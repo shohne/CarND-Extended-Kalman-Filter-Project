@@ -34,7 +34,7 @@ FusionEKF::FusionEKF() {
     ekf_.x_ = VectorXd(4);
     ekf_.x_ << 0,0,0,0;
     
-    Eigen::MatrixXd H_lidar = Eigen::MatrixXd(2,4);
+    H_lidar = Eigen::MatrixXd(2,4);
     H_lidar <<
     1,0,0,0,
     0,1,0,0;
@@ -47,7 +47,7 @@ FusionEKF::FusionEKF() {
 FusionEKF::~FusionEKF() {}
 
 void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
-    
+
     /*****************************************************************************
      *  Initialization
      ****************************************************************************/
@@ -79,7 +79,6 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
      * Update the process noise covariance matrix.
      * Use noise_ax = 9 and noise_ay = 9 for your Q matrix.
      */
-    
     double deltaT = (measurement_pack.timestamp_ - previous_timestamp_) / 1000000.0;
     double deltaT2 = deltaT  * deltaT;
     double deltaT3 = deltaT2 * deltaT;
@@ -99,7 +98,6 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
                 deltaT3 * noise_ax / 2.0,                          0,  deltaT2 * noise_ax / 2.0,                             0,
                                        0,   deltaT3 * noise_ay / 2.0,                         0,      deltaT2 * noise_ay / 2.0;
 
-    
     ekf_.P_ = F_ * ekf_.P_ * F_.transpose() + Q_;
     ekf_.x_ = F_ * ekf_.x_;
 
@@ -134,18 +132,19 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
         Eigen::MatrixXd K = ekf_.P_ * H.transpose() * S.inverse();
         ekf_.x_ = ekf_.x_ + K * y;
         ekf_.P_ = (MatrixXd::Identity(4, 4) - K * H) * ekf_.P_;
-    } else {
+    } 
+
+    else {
         Eigen::VectorXd z = Eigen::VectorXd(2);
         z << measurement_pack.raw_measurements_(0), measurement_pack.raw_measurements_(1);
-        
         Eigen::VectorXd y = Eigen::VectorXd(2);
         y = z - H_lidar * ekf_.x_;
-        
         Eigen::MatrixXd S = H_lidar * ekf_.P_ * H_lidar.transpose() + R_laser_;
         Eigen::MatrixXd K = ekf_.P_ * H_lidar.transpose() * S.inverse();
         ekf_.x_ = ekf_.x_ + K * y;
         ekf_.P_ = (MatrixXd::Identity(4, 4) - K * H_lidar) * ekf_.P_;
     }
+
     previous_timestamp_ = measurement_pack.timestamp_;
 }
 
